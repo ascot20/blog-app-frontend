@@ -80,6 +80,14 @@ function App() {
     }
   }
 
+  const likeBlog = async (id) => {
+    const blogToUpdate = blogs.find(blog=> blog.id === id)
+    const updateLikes = {likes: blogToUpdate.likes + 1}
+    const response = await blogService.updateBlog(id, updateLikes)
+    const updatedBlogs = blogs.map(blog => blog.id === id? response : blog)
+    setBlogs(updatedBlogs)
+  }
+
   return (
     <div>
       {!user ?
@@ -93,7 +101,7 @@ function App() {
           {showBlogForm?<NewBlogForm handleCreateNewBlog={handleCreateNewBlog} setShowBlogForm={setShowBlogForm}/> : 
           <button onClick={()=>setShowBlogForm(true)}>new Blog</button>}
           {blogs.map(blog =>
-            <Blog key={blog.id} blog={blog} username={user.name}/>
+            <Blog key={blog.id} blog={blog} username={user.name} likeBlog={likeBlog}/>
           )}
         </div>
       }

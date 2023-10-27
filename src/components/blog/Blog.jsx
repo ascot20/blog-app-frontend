@@ -1,7 +1,7 @@
 import { useState } from "react"
 import './blog.css'
 
-const Blog = ({ blog}) => {
+function Blog({ blog, likeBlog}){
   const [showAll, setShowAll] = useState(false)
 
   return (
@@ -11,7 +11,7 @@ const Blog = ({ blog}) => {
         <div>
           <p>{blog.title} {blog.author}<button onClick={()=>setShowAll(false)}>hide</button></p>
           <p>{blog.url}</p>
-          <p>likes: {blog.likes}</p>
+          <p>likes: {blog.likes } <button onClick={()=>likeBlog(blog.id)}>like</button></p>
           <p>{blog.user.name}</p>
         </div>
       ): (
