@@ -1,5 +1,9 @@
-.blog{
+.container{
     border: 2px solid;
     margin: 4px;
     padding: 8px;
+}
+
+.removeButton{
+    background-color: rgba(73, 140, 255, 0.849);
 }

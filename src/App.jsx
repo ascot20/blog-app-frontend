@@ -5,19 +5,21 @@ import LoginForm from './components/LoginForm'
 import loginService from './services/login'
 import NewBlogForm from './components/NewBlogForm'
 import Notification from './components/notification/Notification'
+import { useDispatch, useSelector } from 'react-redux'
+import { showNotification } from './redux/reducers/notificationReducer'
 
 function App() {
   const [blogs, setBlogs] = useState([])
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
-  const [message, setMessage] = useState(null)
-  const [isError, setIsError] = useState(false)
   const [showBlogForm, setShowBlogForm] = useState(true)
+  const dispatch = useDispatch()
+  const notification = useSelector(state => state.notification)
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
-      setBlogs(blogs)
+      setBlogs(blogs.sort((a, b) => a.likes - b.likes))
     )
   }, [])
 
@@ -38,11 +40,11 @@ function App() {
       blogService.setToken(response.token)
       window.localStorage.setItem('user', JSON.stringify(response))
     } catch (error) {
-      setMessage('wrong username or password')
-      setIsError(true)
-      setTimeout(() => {
-        setMessage(null)
-      }, 5000);
+      const notification = {
+        message: 'wrong username or password',
+        isError: true
+      }
+      dispatch(showNotification(notification, 5))
     }
   }
 
@@ -53,7 +55,7 @@ function App() {
     else {
       setPassword(e.target.value)
     }
-   
+
   }
 
   const handleLogout = () => {
@@ -65,43 +67,62 @@ function App() {
     try {
       const response = await blogService.postBlog(newBlog)
       setBlogs([...blogs, response])
-      setMessage(`a new blog ${response.title} by ${response.author} added`)
-      setIsError(false)
-      setShowBlogForm(false)
-      setTimeout(() => {
-        setMessage(null)
-      }, 5000);
+      const notification = {
+        message: `a new blog ${response.title} by ${response.author} added`,
+        isError: false
+      }
+      dispatch(showNotification(notification, 5))
     } catch (error) {
-      setMessage('blog could not be added')
-      setIsError(true)
-      setTimeout(() => {
-        setMessage(null)
-      }, 5000);
+      const notification = {
+        message: 'blog could not be added',
+        isError: true
+      }
+      dispatch(showNotification(notification, 5))
     }
   }
 
   const likeBlog = async (id) => {
-    const blogToUpdate = blogs.find(blog=> blog.id === id)
-    const updateLikes = {likes: blogToUpdate.likes + 1}
+    const blogToUpdate = blogs.find(blog => blog.id === id)
+    const updateLikes = { likes: blogToUpdate.likes + 1 }
     const response = await blogService.updateBlog(id, updateLikes)
-    const updatedBlogs = blogs.map(blog => blog.id === id? response : blog)
+    const updatedBlogs = blogs.map(blog => blog.id === id ? response : blog)
     setBlogs(updatedBlogs)
+  }
+
+  const removeBlog = async (id) => {
+    const blogToRemove = blogs.find(blog => blog.id === id)
+    try {
+      await blogService.deleteBlog(blogToRemove.id)
+      const updatedBlogs = blogs.filter(blog => blog.id !== blogToRemove.id)
+      setBlogs(updatedBlogs)
+      const notification = {
+        message: 'blog deleted successfully',
+        isError: false
+      }
+      dispatch(showNotification(notification, 5))
+    } catch (error) {
+      const notification = {
+        message: 'blog could not be deleted',
+        isError: true
+      }
+      dispatch(showNotification(notification, 5))
+    }
   }
 
   return (
     <div>
       {!user ?
-        <LoginForm handleLogin={handleLogin} handleOnChange={handleOnChange} message={message} isError={isError} />
+        <LoginForm handleLogin={handleLogin} handleOnChange={handleOnChange}/>
         :
         <div>
           <h2>blogs</h2>
-          {message && <Notification message={message} isError={isError} />}
+          {notification.message && <Notification/>}
           <p>{user.name} logged in<button onClick={handleLogout}>logout</button></p>
           <h2>create new</h2>
-          {showBlogForm?<NewBlogForm handleCreateNewBlog={handleCreateNewBlog} setShowBlogForm={setShowBlogForm}/> : 
-          <button onClick={()=>setShowBlogForm(true)}>new Blog</button>}
+          {showBlogForm ? <NewBlogForm handleCreateNewBlog={handleCreateNewBlog} setShowBlogForm={setShowBlogForm} /> :
+            <button onClick={() => setShowBlogForm(true)}>new Blog</button>}
           {blogs.map(blog =>
-            <Blog key={blog.id} blog={blog} username={user.name} likeBlog={likeBlog}/>
+            <Blog key={blog.id} blog={blog} username={user.name} likeBlog={likeBlog} removeBlog={removeBlog} />
           )}
         </div>
       }

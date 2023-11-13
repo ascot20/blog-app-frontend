@@ -1,9 +1,11 @@
+import { useSelector } from 'react-redux'
 import './notification.css'
 
-function Notification({message, isError}) {
+function Notification() {
+  const notification = useSelector(state => state.notification)
   return (
-    <div className={isError?'error':'success'}>
-        <p>{message}</p>
+    <div className={notification.isError ? 'error' : 'success'}>
+      <p>{notification.message}</p>
     </div>
   )
 }

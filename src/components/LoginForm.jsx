@@ -1,23 +1,23 @@
-import { useState } from "react"
-import Notification from "./notification/Notification"
+import Notification from './notification/Notification'
+import { useSelector } from 'react-redux'
 
-function LoginForm({handleLogin, handleOnChange, message, isError}) {
-
+function LoginForm({ handleLogin, handleOnChange }) {
+  const notification = useSelector(state => state.notification)
   return (
     <div>
-        <h2>login to application</h2>
-        {message && <Notification message={message} isError={isError}/>}
-        <form onSubmit={handleLogin}>
-            <div>
-            <label htmlFor="username">username</label>
-            <input name="username" type="text" onChange={handleOnChange}/>
-            </div>
-            <div>
-            <label htmlFor="password">password</label>
-            <input name="password" type="password" onChange={handleOnChange}/>
-            </div>
-            <button type="submit">login</button>
-        </form>
+      <h2>login to application</h2>
+      {notification.message && <Notification/>}
+      <form onSubmit={handleLogin}>
+        <div>
+          <label htmlFor="username">username</label>
+          <input name="username" type="text" onChange={handleOnChange} />
+        </div>
+        <div>
+          <label htmlFor="password">password</label>
+          <input name="password" type="password" onChange={handleOnChange} />
+        </div>
+        <button type="submit">login</button>
+      </form>
     </div>
   )
 }
